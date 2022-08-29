@@ -48,4 +48,45 @@ describe 'Merchants API' do
 
     expect(response).to_not be_successful
   end
+
+  it 'returns all items for a given merchant id' do
+    merchant_good = create(:merchant)
+    merchant_bad = create(:merchant)
+    items_good = []
+    items_bad = []
+
+    5.times do
+      items_good << FactoryBot.create(:item, merchant_id: merchant_good.id)
+    end
+
+    2.times do
+      items_bad << FactoryBot.create(:item, merchant_id: merchant_bad.id)
+    end
+
+    get "/api/v1/merchants/#{merchant_good.id}/items"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(5)
+
+    items.each do |item|
+      expect(item).to have_key(:id)
+      expect(item[:id].to_i).to be_an(Integer)
+
+      expect(item[:attributes]).to have_key(:name)
+      expect(item[:attributes][:name]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:description)
+      expect(item[:attributes][:description]).to be_a(String)
+
+      expect(item[:attributes]).to have_key(:unit_price)
+      expect(item[:attributes][:unit_price]).to be_a(Float)
+
+      expect(item[:attributes]).to have_key(:merchant_id)
+      expect(item[:attributes][:merchant_id]).to be_an(Integer)
+      expect(item[:attributes][:merchant_id]).to eq(merchant_good.id)
+    end
+  end
 end
