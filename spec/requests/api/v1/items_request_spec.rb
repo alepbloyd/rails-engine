@@ -34,4 +34,34 @@ describe 'Items API' do
       expect(item[:attributes][:merchant_id]).to be_an(Integer)
     end
   end
+
+  it 'can get one item by id' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, merchant_id: merchant.id)
+    item_3 = FactoryBot.create(:item, merchant_id: merchant.id)
+
+    get "/api/v1/items/#{item_1.id}"
+
+    expect(response).to be_successful
+
+    item = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(item).to have_key(:id)
+
+    expect(item[:id].to_i).to eq(item_1.id)
+
+    expect(item[:attributes]).to have_key(:name)
+    expect(item[:attributes][:name]).to be_a(String)
+
+    expect(item[:attributes]).to have_key(:description)
+    expect(item[:attributes][:description]).to be_a(String)
+
+    expect(item[:attributes]).to have_key(:unit_price)
+    expect(item[:attributes][:unit_price]).to be_a(Float)
+
+    expect(item[:attributes][:merchant_id]).to be_an(Integer)
+  end
+
 end
