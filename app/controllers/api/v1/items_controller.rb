@@ -14,10 +14,19 @@ class Api::V1::ItemsController < ApplicationController
   def show
     if Item.exists?(params[:id])
       item = Item.find(params[:id])
-
       render json: ItemSerializer.new(item)
     else
       render :json => {:error => "Not found"}.to_json, :status => 404
+    end
+  end
+
+  def show_merchant
+    if Item.exists?(params[:id])
+      item = Item.find(params[:id])
+      merchant = item.merchant
+      render json: MerchantSerializer.new(merchant)
+    else
+      render status: 404
     end
   end
 
