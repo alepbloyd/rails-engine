@@ -39,11 +39,19 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def update
+    # require 'pry'; binding.pry 
+    if Item.exists?(params[:id])
+      render json: ItemSerializer.new(Item.update(params[:id],item_params))
+    else
+      render status: 404
+    end
+  end
+
   private
 
   def item_params
     params.require(:item).permit(:name,:description, :unit_price, :merchant_id)
-    # .permit(:name,:description,:unit_price,:merchant_id)
   end
 
 end

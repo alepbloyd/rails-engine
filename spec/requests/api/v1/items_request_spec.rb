@@ -148,7 +148,65 @@ describe 'Items API' do
     expect(response.status).to eq(400)
 
     expect(Item.count).to eq(1)
+  end
 
+  it 'can edit an item' do
+    merchant_1 = create(:merchant)
+    merchant_2 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    previous_name = item_1.name
+    previous_description = item_1.description
+    previous_unit_price = item_1.unit_price
+    previous_merchant_id = item_1.merchant_id
+
+    item_params = {
+      name: "Snake Soup",
+      description: "It is for snakes, not made of them",
+      unit_price: 500,
+      merchant_id: merchant_2.id
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{item_1.id}", headers: headers, params: JSON.generate({item: item_params})
+
+    item_1 = Item.find_by(id: item_1.id)
+
+    expect(response).to be_successful
+    
+    expect(item_1.name).to_not eq(previous_name)
+    expect(item_1.description).to_not eq(previous_description)
+    expect(item_1.unit_price).to_not eq(previous_unit_price)
+    expect(item_1.merchant_id).to_not eq(previous_merchant_id)
+
+    expect(item_1.name).to eq("Snake Soup")
+    expect(item_1.description).to eq("It is for snakes, not made of them")
+    expect(item_1.unit_price).to eq(500)
+    expect(item_1.merchant_id).to eq(merchant_2.id)
+  end
+
+  it 'returns an error if trying to edit non-existent item' do
+    merchant_1 = create(:merchant)
+    merchant_2 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    bad_item_id = item_1.id + 1
+
+    item_params = {
+      name: "Snake Soup",
+      description: "It is for snakes, not made of them",
+      unit_price: 500,
+      merchant_id: merchant_2.id
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{bad_item_id}", headers: headers, params: JSON.generate({item: item_params})
+
+    expect(response.status).to eq(404)
   end
 
 end
