@@ -64,4 +64,16 @@ describe 'Items API' do
     expect(item[:attributes][:merchant_id]).to be_an(Integer)
   end
 
+  it 'returns an error getting item by id if item does not exist' do
+    merchant = create(:merchant)
+
+    good_id = FactoryBot.create(:item, merchant_id: merchant.id).id
+
+    bad_id = good_id + 1
+
+    get "/api/v1/items/#{bad_id}"
+
+    expect(response).to_not be_successful
+  end
+
 end
