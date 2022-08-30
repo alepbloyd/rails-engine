@@ -251,4 +251,19 @@ describe 'Items API' do
     expect(item_1.name).to_not eq(previous_name)
   end
 
+  it 'can get merchant information for a given item' do
+    merchant_1 = create(:merchant)
+    merchant_2 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    get "/api/v1/items/#{item_1.id}/merchant"
+
+    merchant = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(response).to be_successful
+
+    expect(merchant[:attributes][:name]).to eq(merchant_1.name)
+  end
+
 end

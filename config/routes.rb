@@ -8,6 +8,8 @@ Rails.application.routes.draw do
       end
 
       resources :items, only: [:index, :show, :create, :destroy, :update]
+
+      get "/items/:id/merchant", to: "items#show_merchant"
     end
   end
 end
