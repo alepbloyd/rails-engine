@@ -209,4 +209,46 @@ describe 'Items API' do
     expect(response.status).to eq(404)
   end
 
+  it 'returns an error if attempting to update item to a non-existent merchant id' do
+    merchant_1 = create(:merchant)
+    bad_merchant_id = merchant_1.id + 1
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    item_params = {
+      name: "Snake Soup",
+      description: "It is for snakes, not made of them",
+      unit_price: 500,
+      merchant_id: bad_merchant_id
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{item_1.id}", headers: headers, params: JSON.generate({item: item_params})
+
+    expect(response.status).to eq(404)
+  end
+
+  it 'can update an item with only partial data' do
+    merchant_1 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    previous_name = item_1.name
+
+    item_params = {
+      name: "Snake Soup"
+    }
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{item_1.id}", headers: headers, params: JSON.generate({item: item_params})
+
+    expect(response).to be_successful
+
+    item_1 = Item.find_by(id: item_1.id)
+
+    expect(item_1.name).to_not eq(previous_name)
+  end
+
 end

@@ -40,9 +40,16 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def update
-    # require 'pry'; binding.pry 
     if Item.exists?(params[:id])
-      render json: ItemSerializer.new(Item.update(params[:id],item_params))
+      if item_params.has_key?("merchant_id")
+        if Merchant.exists?(item_params[:merchant_id])
+            render json: ItemSerializer.new(Item.update(params[:id],item_params)), status: 200
+        else
+          render status: 404
+        end
+      else
+        render json: ItemSerializer.new(Item.update(params[:id],item_params)), status: 200
+      end
     else
       render status: 404
     end
