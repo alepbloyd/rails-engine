@@ -100,4 +100,55 @@ describe 'Items API' do
     expect(created_item.merchant_id).to eq(item_params[:merchant_id])
   end
 
+  it 'returns an error if item is not successfully created' do
+    merchant = create(:merchant)
+
+    item_params = ({
+      description: "Whole bottle of gross stuff.",
+      unit_price: 200,
+      merchant_id: merchant.id
+    })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
+
+    expect(response).to_not be_successful
+  end
+
+  it 'can destroy an item' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, merchant_id: merchant.id)
+    item_3 = FactoryBot.create(:item, merchant_id: merchant.id)
+
+    expect(Item.count).to eq(3)
+
+    delete "/api/v1/items/#{item_1.id}"
+
+    expect(response.status).to eq(201)
+
+    expect(Item.count).to eq(2)
+
+    expect{Item.find(item_1.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
+
+  it 'returns an error if destroy is unsuccessful' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant.id)
+
+    bad_id = item_1.id + 1
+
+    expect(Item.count).to eq(1)
+
+    delete "/api/v1/items/#{bad_id}"
+
+    expect(response.status).to eq(400)
+
+    expect(Item.count).to eq(1)
+
+  end
+
 end

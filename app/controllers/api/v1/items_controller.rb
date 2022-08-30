@@ -22,13 +22,28 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def create
-    render json: Item.create(item_params)
+    # if item_params.permitted?
+    if item_params[:name] != nil && item_params[:description] != nil && item_params[:unit_price] != nil && item_params[:merchant_id] != nil 
+      render json: ItemSerializer.new(Item.create(item_params)), status: 201
+    else
+      render :json => {:error => "All attributes (name, description, unit_price, merchant_id) are required"}.to_json, :status => 400
+    end
+  end
+
+  def destroy
+    if Item.exists?(params[:id])
+      Item.delete(params[:id])
+      render status: 201
+    else
+      render :json => {:error => "Item does not exist"}.to_json, :status => 400
+    end
   end
 
   private
 
-    def item_params
-      params.require(:item).permit(:name,:description,:unit_price,:merchant_id)
-    end
+  def item_params
+    params.require(:item).permit(:name,:description, :unit_price, :merchant_id)
+    # .permit(:name,:description,:unit_price,:merchant_id)
+  end
 
 end
