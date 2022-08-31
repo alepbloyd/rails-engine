@@ -14,7 +14,8 @@ class Api::V1::MerchantsController < ApplicationController
 
   def find
     if params[:name] != nil && params[:name] != ""
-      merchant = Merchant.case_insensitive_search(params[:name])
+      merchant = Merchant.case_insensitive_search(params[:name]).first
+      render json: MerchantSerializer.new(merchant)
     else
       render status: 404
     end
