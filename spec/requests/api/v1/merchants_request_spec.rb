@@ -135,14 +135,24 @@ describe 'Merchants API' do
     expect(merchant[:attributes][:name]).to eq(merchant_2.name)
   end
 
-  xit 'is case insensitive in search' do
-    merchant_1 = FactoryBot.create(:merchant, name: "Snake Shoppe")
-    merchant_2 = FactoryBot.create(:merchant, name: "Fish Factory")
+  it 'is case insensitive in search' do
+    merchant_1 = FactoryBot.create(:merchant, name: "B - Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "a - Snake Shoppe")
 
     search_string = "SnAkE"
 
     get "/api/v1/merchants/find?name=#{search_string}"
 
     expect(response).to be_successful
+
+    merchant = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(merchant).to have_key(:id)
+
+    expect(merchant[:id].to_i).to eq(merchant_2.id)
+
+    expect(merchant[:attributes]).to have_key(:name)
+
+    expect(merchant[:attributes][:name]).to eq(merchant_2.name)
   end
 end
