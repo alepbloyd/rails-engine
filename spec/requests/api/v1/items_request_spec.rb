@@ -347,7 +347,7 @@ describe 'Items API' do
 
     search_string = "29"
 
-    get "/api/v1/items/find?min_price=#{search_string}"
+    get "/api/v1/items/find_all?min_price=#{search_string}"
 
     expect(response).to be_successful
 
@@ -369,7 +369,7 @@ describe 'Items API' do
 
     search_string = "31"
 
-    get "/api/v1/items/find?max_price=#{search_string}"
+    get "/api/v1/items/find_all?max_price=#{search_string}"
 
     expect(response).to be_successful
 
@@ -394,7 +394,7 @@ describe 'Items API' do
     min_price = "29"
     max_price = "41"
 
-    get "/api/v1/items/find?min_price=#{min_price}&max_price=#{max_price}"
+    get "/api/v1/items/find_all?min_price=#{min_price}&max_price=#{max_price}"
 
     expect(response).to be_successful
 
@@ -404,5 +404,29 @@ describe 'Items API' do
 
     expect(items.first[:attributes][:name]).to eq(item_4.name)
     expect(items.second[:attributes][:name]).to eq(item_3.name)
+  end
+
+  it 'returns 400 error if min_price is less than 0' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+
+    min_price = "-5"
+
+    get "/api/v1/items/find_all?min_price=#{min_price}"
+    
+    expect(response.status).to eq(400)
+  end
+
+  it 'returns 400 error if max_price is less than 0' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+
+    max_price = "-5"
+
+    get "/api/v1/items/find_all?max_price=#{max_price}"
+    
+    expect(response.status).to eq(400)
   end
 end

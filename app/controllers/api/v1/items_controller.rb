@@ -49,16 +49,16 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find_all
-    if params[:name] != nil && params[:name] != ""
+    if (params[:min_price].present? || params[:max_price].present?) && params[:name].present?
+      render status: 400
+    elsif params[:name].present?
       items = Item.find_all_case_insensitive(params[:name])
       render json: ItemSerializer.new(items)
-    else
-      render status: 404
-    end
-  end
-
-  def find
-    if params[:min_price].present? && params[:max_price].present?
+    elsif params[:min_price].present? && params[:min_price].to_i < 0
+      render status: 400
+    elsif params[:max_price].present? && params[:max_price].to_i < 0
+      render status: 400
+    elsif params[:min_price].present? && params[:max_price].present?
       items = Item.find_by_min_and_max(params[:min_price],params[:max_price])
       render json: ItemSerializer.new(items)
     elsif params[:min_price].present?
