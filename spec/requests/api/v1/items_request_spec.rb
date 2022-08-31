@@ -278,4 +278,38 @@ describe 'Items API' do
     expect(response).to_not be_successful
   end
 
+  it 'returns one item that matches a given search term, if there is only one result' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "Snake Snax", merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, name: "Fish Flakes", merchant_id: merchant.id)
+
+    search_string = "Snake"
+
+    get "/api/v1/items/find_all?name=#{search_string}"
+    
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(1)
+
+    item = items.first
+
+    expect(item).to have_key(:id)
+
+    expect(item[:attributes]).to have_key(:name)
+    expect(item[:attributes][:name]).to eq(item_1.name)
+
+    expect(item[:attributes]).to have_key(:description)
+    expect(item[:attributes][:description]).to eq(item_1.description)
+
+    expect(item[:attributes]).to have_key(:unit_price)
+    expect(item[:attributes][:unit_price]).to eq(item_1.unit_price)
+
+    expect(item[:attributes]).to have_key(:merchant_id)
+    expect(item[:attributes][:merchant_id]).to eq(item_1.id)
+
+  end
+
 end

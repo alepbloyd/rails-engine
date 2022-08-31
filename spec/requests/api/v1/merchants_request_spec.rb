@@ -92,7 +92,7 @@ describe 'Merchants API' do
     end
   end
 
-  it 'returns one merchant that matches a given serach term, if there is only one result' do
+  it 'returns one merchant that matches a given search term, if there is only one result' do
     merchant_1 = FactoryBot.create(:merchant, name: "Snake Shoppe")
     merchant_2 = FactoryBot.create(:merchant, name: "Fish Factory")
 
