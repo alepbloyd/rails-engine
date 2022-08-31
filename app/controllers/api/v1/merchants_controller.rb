@@ -21,7 +21,7 @@ class Api::V1::MerchantsController < ApplicationController
         render json: MerchantSerializer.new(merchant)
       end
     else
-      render status: 404
+      render status: 400
     end
   end
 

@@ -57,6 +57,15 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def find
+    if params[:min_price] != nil && params[:min_price] != ""
+      items = Item.find_by_min_price(params[:min_price])
+      render json: ItemSerializer.new(items)
+    else
+
+    end
+  end
+
   private
 
   def item_params
