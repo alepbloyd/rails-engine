@@ -13,18 +13,9 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
-  # def show_merchant
-  #   if Item.exists?(params[:id])
-  #     item = Item.find(params[:id])
-  #     merchant = item.merchant
-  #     render json: MerchantSerializer.new(merchant)
-  #   else
-  #     render status: 404
-  #   end
-  # end
-
   def create
     # if item_params.permitted?
+    # refactor to use .save once figure out why I strong params is not working for me here
     if item_params[:name] != nil && item_params[:description] != nil && item_params[:unit_price] != nil && item_params[:merchant_id] != nil 
       render json: ItemSerializer.new(Item.create(item_params)), status: 201
     else
