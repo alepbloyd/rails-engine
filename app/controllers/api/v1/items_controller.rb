@@ -50,7 +50,7 @@ class Api::V1::ItemsController < ApplicationController
 
   def find_all
     if params[:name] != nil && params[:name] != ""
-      items = Item.case_insensitive_search(params[:name])
+      items = Item.find_all_case_insensitive(params[:name])
       render json: ItemSerializer.new(items)
     else
       render status: 404

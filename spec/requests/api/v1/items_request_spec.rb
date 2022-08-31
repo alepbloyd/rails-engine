@@ -308,8 +308,33 @@ describe 'Items API' do
     expect(item[:attributes][:unit_price]).to eq(item_1.unit_price)
 
     expect(item[:attributes]).to have_key(:merchant_id)
-    expect(item[:attributes][:merchant_id]).to eq(item_1.id)
+    expect(item[:attributes][:merchant_id]).to eq(item_1.merchant_id)
+  end
 
+  it 'returns all items matching search term, in case-insensitive alphabetical order' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id)
+
+    item_4 = FactoryBot.create(:item, name: "Fish Flakes", merchant_id: merchant.id)
+    item_5 = FactoryBot.create(:item, name: "Dog Dinner", merchant_id: merchant.id)
+    item_6 = FactoryBot.create(:item, name: "Bird Biscuits", merchant_id: merchant.id)
+
+    search_string = "snake"
+
+    get "/api/v1/items/find_all?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(3)
+
+    expect(items.first[:attributes][:name]).to eq(item_2.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+    expect(items.third[:attributes][:name]).to eq(item_1.name)
   end
 
 end

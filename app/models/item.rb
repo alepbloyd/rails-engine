@@ -5,7 +5,7 @@ class Item < ApplicationRecord
   validates :description, presence: true
   validates :unit_price, presence: true
 
-  def self.case_insensitive_search(search_string)
-    where("lower(name) LIKE ?", "%#{search_string.downcase}%").order('name DESC')
+  def self.find_all_case_insensitive(search_string)
+    where("lower(name) LIKE ?", "%#{search_string.downcase}%").order(:name)
   end
 end
