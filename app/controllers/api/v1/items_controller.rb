@@ -13,15 +13,15 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
-  def show_merchant
-    if Item.exists?(params[:id])
-      item = Item.find(params[:id])
-      merchant = item.merchant
-      render json: MerchantSerializer.new(merchant)
-    else
-      render status: 404
-    end
-  end
+  # def show_merchant
+  #   if Item.exists?(params[:id])
+  #     item = Item.find(params[:id])
+  #     merchant = item.merchant
+  #     render json: MerchantSerializer.new(merchant)
+  #   else
+  #     render status: 404
+  #   end
+  # end
 
   def create
     # if item_params.permitted?
