@@ -359,4 +359,50 @@ describe 'Items API' do
     expect(items.second[:attributes][:name]).to eq(item_3.name)
   end
 
+  it 'returns search results given a max_price parameter' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id, unit_price: 20)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id, unit_price: 30)
+    item_4 = FactoryBot.create(:item, name: "a - dog dinner", merchant_id: merchant.id, unit_price: 40)
+
+    search_string = "31"
+
+    get "/api/v1/items/find?max_price=#{search_string}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(3)
+
+    expect(items.first[:attributes][:name]).to eq(item_2.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+    expect(items.third[:attributes][:name]).to eq(item_1.name)
+  end
+
+  it 'returns search results given a min_price parameter and a max_price parameter' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id, unit_price: 20)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id, unit_price: 30)
+    item_4 = FactoryBot.create(:item, name: "a - dog dinner", merchant_id: merchant.id, unit_price: 40)
+    item_5 = FactoryBot.create(:item, name: "z - zebra zamboni", merchant_id: merchant.id, unit_price: 50)
+
+    min_price = "29"
+    max_price = "41"
+
+    get "/api/v1/items/find?min_price=#{min_price}&max_price=#{max_price}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(2)
+
+    expect(items.first[:attributes][:name]).to eq(item_4.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+  end
 end

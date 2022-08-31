@@ -58,11 +58,15 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
-    if params[:min_price] != nil && params[:min_price] != ""
+    if params[:min_price].present? && params[:max_price].present?
+      items = Item.find_by_min_and_max(params[:min_price],params[:max_price])
+      render json: ItemSerializer.new(items)
+    elsif params[:min_price].present?
       items = Item.find_by_min_price(params[:min_price])
       render json: ItemSerializer.new(items)
-    else
-
+    elsif params[:max_price].present?
+      items = Item.find_by_max_price(params[:max_price])
+      render json: ItemSerializer.new(items)
     end
   end
 

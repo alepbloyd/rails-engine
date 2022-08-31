@@ -10,6 +10,14 @@ class Item < ApplicationRecord
   end
 
   def self.find_by_min_price(min_price)
-    where("unit_price > ?", min_price.to_i).order(:name)
+    where("unit_price >= ?", min_price.to_i).order(:name)
+  end
+
+  def self.find_by_max_price(max_price)
+    where("unit_price <= ?", max_price.to_i).order(:name)
+  end
+
+  def self.find_by_min_and_max(min_price,max_price)
+    where(unit_price: min_price..max_price).order(:name)
   end
 end
