@@ -49,25 +49,39 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find_all
-    if (params[:min_price].present? || params[:max_price].present?) && params[:name].present?
-      render status: 400
-    elsif params[:name].present?
-      items = Item.find_all_case_insensitive(params[:name])
-      render json: ItemSerializer.new(items)
-    elsif params[:min_price].present? && params[:min_price].to_i < 0
-      render status: 400
-    elsif params[:max_price].present? && params[:max_price].to_i < 0
-      render status: 400
-    elsif params[:min_price].present? && params[:max_price].present?
-      items = Item.find_by_min_and_max(params[:min_price],params[:max_price])
-      render json: ItemSerializer.new(items)
-    elsif params[:min_price].present?
-      items = Item.find_by_min_price(params[:min_price])
-      render json: ItemSerializer.new(items)
-    elsif params[:max_price].present?
-      items = Item.find_by_max_price(params[:max_price])
-      render json: ItemSerializer.new(items)
+    name_present = params[:name].present?
+    min_present = params[:min_price].present?
+    max_present = params[:max_price].present?
+
+    if min_present
+      min_below_zero = params[:min_price].to_i < 0
     end
+    
+    if max_present
+      max_below_zero = params[:max_price].to_i < 0
+    end
+
+    if name_present && (min_present || max_present)
+      render status: 400
+      return
+    elsif name_present
+      items = Item.find_all_case_insensitive(params[:name])
+    elsif min_present && min_below_zero
+      render status: 400
+      return
+    elsif max_present && max_below_zero
+      render status: 400
+      return
+    elsif min_present && max_present
+      items = Item.find_by_price(params[:min_price].to_i,params[:max_price].to_i)
+    elsif min_present
+      items = Item.find_by_price(params[:min_price].to_i, Float::INFINITY)
+    elsif max_present
+      items = Item.find_by_price(0,params[:max_price].to_i)
+    end
+
+    render json: ItemSerializer.new(items)
+
   end
 
   private
