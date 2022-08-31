@@ -145,6 +145,8 @@ describe 'Merchants API' do
 
     expect(response).to be_successful
 
+    json = JSON.parse(response.body, symbolize_names: true)
+
     merchant = JSON.parse(response.body, symbolize_names: true)[:data]
 
     expect(merchant).to have_key(:id)
@@ -154,5 +156,18 @@ describe 'Merchants API' do
     expect(merchant[:attributes]).to have_key(:name)
 
     expect(merchant[:attributes][:name]).to eq(merchant_2.name)
+  end
+
+  it 'returns an empty array if no records match search' do
+    merchant_1 = FactoryBot.create(:merchant, name: "B - Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "a - Snake Shoppe")
+
+    search_string = "BigBugs"
+
+    get "/api/v1/merchants/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    json = JSON.parse(response.body, symbolize_names: true)
   end
 end
