@@ -170,4 +170,18 @@ describe 'Merchants API' do
 
     json = JSON.parse(response.body, symbolize_names: true)
   end
+
+  it 'returns an error if a string is passed instead of an integer as merchant id in getting merchant items' do
+    merchant_1 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+    item_2 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+    item_3 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    bad_merchant_string = "WhyPutAStringHere"
+
+    get "/api/v1/merchants/#{bad_merchant_string}/items"
+
+    expect(response.status).to eq(404)
+  end
 end
