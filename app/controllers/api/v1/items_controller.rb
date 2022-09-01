@@ -80,7 +80,7 @@ class Api::V1::ItemsController < ApplicationController
       render status: 400
       return
     elsif name_present
-      items = Item.find_all_case_insensitive(params[:name])
+      items = Item.find_all_by_name(params[:name])
     elsif min_present && min_below_zero
       render status: 400
       return
@@ -88,11 +88,11 @@ class Api::V1::ItemsController < ApplicationController
       render status: 400
       return
     elsif min_present && max_present
-      items = Item.find_by_price(params[:min_price].to_i,params[:max_price].to_i)
+      items = Item.find_all_by_price(params[:min_price].to_i,params[:max_price].to_i)
     elsif min_present
-      items = Item.find_by_price(params[:min_price].to_i, Float::INFINITY)
+      items = Item.find_all_by_price(params[:min_price].to_i, Float::INFINITY)
     elsif max_present
-      items = Item.find_by_price(0,params[:max_price].to_i)
+      items = Item.find_all_by_price(0,params[:max_price].to_i)
     end
 
     render json: ItemSerializer.new(items)

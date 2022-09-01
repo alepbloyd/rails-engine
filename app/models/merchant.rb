@@ -1,7 +1,5 @@
-require './app/lib/modules/name_searchable.rb'
-
 class Merchant < ApplicationRecord
-  extend NameSearchable
+  extend Searchable
 
   has_many :items
 end
