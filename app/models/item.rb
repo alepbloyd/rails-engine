@@ -1,4 +1,8 @@
+require './app/lib/modules/name_searchable.rb'
+
 class Item < ApplicationRecord
+  extend NameSearchable
+
   belongs_to :merchant
 
   validates :name, presence: true

@@ -48,6 +48,21 @@ class Api::V1::ItemsController < ApplicationController
     end
   end
 
+  def find
+    name_present = params[:name].present?
+
+    if name_present
+      item = Item.find_one_by_name(params[:name])
+      if item.nil?
+        render json: { data: {} }, status: 200
+      else
+        render json: ItemSerializer.new(item)
+      end
+    else
+      render status: 400
+    end
+  end
+
   def find_all
     name_present = params[:name].present?
     min_present = params[:min_price].present?

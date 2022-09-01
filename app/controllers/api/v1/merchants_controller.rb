@@ -14,7 +14,7 @@ class Api::V1::MerchantsController < ApplicationController
 
   def find
     if params[:name] != nil && params[:name] != ""
-      merchant = Merchant.case_insensitive_search(params[:name]).first
+      merchant = Merchant.find_one_by_name(params[:name])
       if merchant.nil?
         render json: { data: {} }, status: 200
       else

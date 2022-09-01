@@ -429,4 +429,29 @@ describe 'Items API' do
     
     expect(response.status).to eq(400)
   end
+
+  it 'can find one item by name fragment (case-insensitive, first alphabetical by name)' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant.id, name: "B - Snake Snax")
+    item_2 = FactoryBot.create(:item, merchant_id: merchant.id, name: "Bug Breakfast")
+    item_3 = FactoryBot.create(:item, merchant_id: merchant.id, name: "a - Juice of a snake")
+
+    search_string = "snake"
+
+    get "/api/v1/items/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    item = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(item).to have_key(:id)
+
+    expect(item[:id].to_i).to eq(item_3.id)
+
+    expect(item[:attributes][:name]).to eq(item_3.name)
+    expect(item[:attributes][:unit_price]).to eq(item_3.unit_price)
+    expect(item[:attributes][:description]).to eq(item_3.description)
+    expect(item[:attributes][:merchant_id]).to eq(item_3.merchant_id)
+  end
 end
