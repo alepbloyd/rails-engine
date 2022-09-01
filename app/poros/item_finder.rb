@@ -24,13 +24,26 @@ class ItemFinder
     @max_price.to_i < 0
   end
 
-  def search_all
+  def search_one
     if self.min_below_zero? || self.max_below_zero?
-      # error_response({message: "Min and Max price cannot be below zero"}, :not_found)
-      # render json: "no", status: 404
       "Below zero error"
     elsif @name_present && (@max_present || @min_present)
-      # error_response({message: "Cannot search name and price in one query"}, :not_found)
+      "Name and Price error"
+    elsif @name_present
+      Item.find_one_by_name(@name)
+    elsif @min_present && @max_present
+      Item.find_one_by_price(@min_price.to_i,@max_price.to_i)
+    elsif @min_present
+      Item.find_one_by_price(@min_price.to_i, Float::INFINITY)
+    elsif @max_present
+      Item.find_one_by_price(0,@max_price.to_i)
+    end
+  end
+
+  def search_all
+    if self.min_below_zero? || self.max_below_zero?
+      "Below zero error"
+    elsif @name_present && (@max_present || @min_present)
       "Name and Price error"
     elsif @name_present
       Item.find_all_by_name(@name)

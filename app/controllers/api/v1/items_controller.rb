@@ -43,17 +43,14 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find
-    name_present = params[:name].present?
+    finder = ItemFinder.new(params[:name],params[:min_price],params[:max_price])
 
-    if name_present
-      item = Item.find_one_by_name(params[:name])
-      if item.nil?
-        render json: { data: {} }, status: 200
-      else
-        render json: ItemSerializer.new(item)
-      end
+    results = finder.search_one
+
+    if results == "Below zero error" || results == "Name and Price error"
+      error_response(results, 400)
     else
-      render status: 400
+      item_json_response(results)
     end
   end
 
