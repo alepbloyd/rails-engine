@@ -145,7 +145,7 @@ describe 'Items API' do
 
     delete "/api/v1/items/#{bad_id}"
 
-    expect(response.status).to eq(400)
+    expect(response.status).to eq(404)
 
     expect(Item.count).to eq(1)
   end

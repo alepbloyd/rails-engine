@@ -1,16 +1,13 @@
 class Api::V1::ItemsController < ApplicationController
 
   def index
-    render json: ItemSerializer.new(Item.all)
+    items = Item.all
+    item_json_response(items)
   end
 
   def show
-    if Item.exists?(params[:id])
-      item = Item.find(params[:id])
-      render json: ItemSerializer.new(item)
-    else
-      render :json => {:error => "Not found"}.to_json, :status => 404
-    end
+    item = Item.find(params[:id])
+    item_json_response(item)
   end
 
   def create
@@ -24,12 +21,9 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def destroy
-    if Item.exists?(params[:id])
-      Item.delete(params[:id])
-      render status: 201
-    else
-      render :json => {:error => "Item does not exist"}.to_json, :status => 400
-    end
+    item = Item.find(params[:id])
+    Item.delete(item)
+    render status: 201
   end
 
   def update

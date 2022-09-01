@@ -2,13 +2,10 @@ class Api::V1::MerchantItemsController < ApplicationController
 
   def index
     if params[:merchant_id].to_i.to_s != params[:merchant_id]
-      render :json => {:error => "merchant ID cannot be a non-numeric string"}.to_json, :status => 404
-    elsif Merchant.exists?(params[:merchant_id])
-      merchant = Merchant.find(params[:merchant_id])
-      render json: ItemSerializer.new(merchant.items)
+      error_response("Merchant ID cannot be a non-numeric string", 404)
     else
-      render status: 404
-      return
+      merchant = Merchant.find(params[:merchant_id])
+      item_json_response(merchant.items)
     end
   end
 
