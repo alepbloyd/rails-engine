@@ -8,6 +8,6 @@ module Response
   end
 
   def error_response(message, status)
-    render json: message, status: 404
+    render json: message, status: status
   end
 end
