@@ -1,4 +1,4 @@
-# class ErrorSerializer
-#   include JSONAPI::Serializer
-#   attributes :message, :error, :status
-# end
+class ErrorSerializer
+  include JSONAPI::Serializer
+  attributes :error, :status
+end
