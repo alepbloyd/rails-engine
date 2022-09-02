@@ -19,4 +19,7 @@ class Api::V1::MerchantsController < ApplicationController
     end
   end
 
+  def find_all
+  end
+
 end
