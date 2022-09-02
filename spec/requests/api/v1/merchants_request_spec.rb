@@ -91,4 +91,97 @@ describe 'Merchants API' do
       expect(item[:attributes][:merchant_id]).to_not eq(merchant_bad.id)
     end
   end
+
+  it 'returns one merchant that matches a given search term, if there is only one result' do
+    merchant_1 = FactoryBot.create(:merchant, name: "Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "Fish Factory")
+
+    search_string = "Snake"
+
+    get "/api/v1/merchants/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    merchant = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(merchant).to have_key(:id)
+
+    expect(merchant[:id].to_i).to eq(merchant_1.id)
+
+    expect(merchant[:attributes]).to have_key(:name)
+
+    expect(merchant[:attributes][:name]).to eq(merchant_1.name)
+  end
+
+  it 'returns the first merchant in case-insensitive alphabetical order if multiple matches are found' do
+    merchant_1 = FactoryBot.create(:merchant, name: "B - Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "a - Snake Shoppe")
+
+    search_string = "Snake"
+
+    get "/api/v1/merchants/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    
+    merchant = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(merchant).to have_key(:id)
+
+    expect(merchant[:id].to_i).to eq(merchant_2.id)
+
+    expect(merchant[:attributes]).to have_key(:name)
+
+    expect(merchant[:attributes][:name]).to eq(merchant_2.name)
+  end
+
+  it 'is case insensitive in search' do
+    merchant_1 = FactoryBot.create(:merchant, name: "B - Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "a - Snake Shoppe")
+
+    search_string = "SnAkE"
+
+    get "/api/v1/merchants/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    json = JSON.parse(response.body, symbolize_names: true)
+
+    merchant = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(merchant).to have_key(:id)
+
+    expect(merchant[:id].to_i).to eq(merchant_2.id)
+
+    expect(merchant[:attributes]).to have_key(:name)
+
+    expect(merchant[:attributes][:name]).to eq(merchant_2.name)
+  end
+
+  it 'returns an empty array if no records match search' do
+    merchant_1 = FactoryBot.create(:merchant, name: "B - Snake Shoppe")
+    merchant_2 = FactoryBot.create(:merchant, name: "a - Snake Shoppe")
+
+    search_string = "BigBugs"
+
+    get "/api/v1/merchants/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    json = JSON.parse(response.body, symbolize_names: true)
+  end
+
+  it 'returns an error if a string is passed instead of an integer as merchant id in getting merchant items' do
+    merchant_1 = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+    item_2 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+    item_3 = FactoryBot.create(:item, merchant_id: merchant_1.id)
+
+    bad_merchant_string = "WhyPutAStringHere"
+
+    get "/api/v1/merchants/#{bad_merchant_string}/items"
+
+    expect(response.status).to eq(404)
+  end
 end

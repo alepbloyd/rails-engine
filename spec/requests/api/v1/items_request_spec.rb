@@ -145,7 +145,7 @@ describe 'Items API' do
 
     delete "/api/v1/items/#{bad_id}"
 
-    expect(response.status).to eq(400)
+    expect(response.status).to eq(404)
 
     expect(Item.count).to eq(1)
   end
@@ -226,7 +226,7 @@ describe 'Items API' do
 
     patch "/api/v1/items/#{item_1.id}", headers: headers, params: JSON.generate({item: item_params})
 
-    expect(response.status).to eq(404)
+    expect(response.status).to eq(422)
   end
 
   it 'can update an item with only partial data' do
@@ -278,4 +278,180 @@ describe 'Items API' do
     expect(response).to_not be_successful
   end
 
+  it 'returns one item that matches a given search term, if there is only one result' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "Snake Snax", merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, name: "Fish Flakes", merchant_id: merchant.id)
+
+    search_string = "Snake"
+
+    get "/api/v1/items/find_all?name=#{search_string}"
+    
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(1)
+
+    item = items.first
+
+    expect(item).to have_key(:id)
+
+    expect(item[:attributes]).to have_key(:name)
+    expect(item[:attributes][:name]).to eq(item_1.name)
+
+    expect(item[:attributes]).to have_key(:description)
+    expect(item[:attributes][:description]).to eq(item_1.description)
+
+    expect(item[:attributes]).to have_key(:unit_price)
+    expect(item[:attributes][:unit_price]).to eq(item_1.unit_price)
+
+    expect(item[:attributes]).to have_key(:merchant_id)
+    expect(item[:attributes][:merchant_id]).to eq(item_1.merchant_id)
+  end
+
+  it 'returns all items matching search term, in case-insensitive alphabetical order' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id)
+
+    item_4 = FactoryBot.create(:item, name: "Fish Flakes", merchant_id: merchant.id)
+    item_5 = FactoryBot.create(:item, name: "Dog Dinner", merchant_id: merchant.id)
+    item_6 = FactoryBot.create(:item, name: "Bird Biscuits", merchant_id: merchant.id)
+
+    search_string = "snake"
+
+    get "/api/v1/items/find_all?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(3)
+
+    expect(items.first[:attributes][:name]).to eq(item_2.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+    expect(items.third[:attributes][:name]).to eq(item_1.name)
+  end
+
+  it 'returns search results given a min_price parameter' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id, unit_price: 20)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id, unit_price: 30)
+    item_4 = FactoryBot.create(:item, name: "a - dog dinner", merchant_id: merchant.id, unit_price: 40)
+
+    search_string = "29"
+
+    get "/api/v1/items/find_all?min_price=#{search_string}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(2)
+
+    expect(items.first[:attributes][:name]).to eq(item_4.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+  end
+
+  it 'returns search results given a max_price parameter' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id, unit_price: 20)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id, unit_price: 30)
+    item_4 = FactoryBot.create(:item, name: "a - dog dinner", merchant_id: merchant.id, unit_price: 40)
+
+    search_string = "31"
+
+    get "/api/v1/items/find_all?max_price=#{search_string}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(3)
+
+    expect(items.first[:attributes][:name]).to eq(item_2.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+    expect(items.third[:attributes][:name]).to eq(item_1.name)
+  end
+
+  it 'returns search results given a min_price parameter and a max_price parameter' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+    item_2 = FactoryBot.create(:item, name: "a - Big SNAKE", merchant_id: merchant.id, unit_price: 20)
+    item_3 = FactoryBot.create(:item, name: "b - small snake small", merchant_id: merchant.id, unit_price: 30)
+    item_4 = FactoryBot.create(:item, name: "a - dog dinner", merchant_id: merchant.id, unit_price: 40)
+    item_5 = FactoryBot.create(:item, name: "z - zebra zamboni", merchant_id: merchant.id, unit_price: 50)
+
+    min_price = "29"
+    max_price = "41"
+
+    get "/api/v1/items/find_all?min_price=#{min_price}&max_price=#{max_price}"
+
+    expect(response).to be_successful
+
+    items = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(items.count).to eq(2)
+
+    expect(items.first[:attributes][:name]).to eq(item_4.name)
+    expect(items.second[:attributes][:name]).to eq(item_3.name)
+  end
+
+  it 'returns 400 error if min_price is less than 0' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+
+    min_price = "-5"
+
+    get "/api/v1/items/find_all?min_price=#{min_price}"
+    
+    expect(response.status).to eq(400)
+  end
+
+  it 'returns 400 error if max_price is less than 0' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, name: "c - Snake Snax", merchant_id: merchant.id, unit_price: 10)
+
+    max_price = "-5"
+
+    get "/api/v1/items/find_all?max_price=#{max_price}"
+    
+    expect(response.status).to eq(400)
+  end
+
+  it 'can find one item by name fragment (case-insensitive, first alphabetical by name)' do
+    merchant = create(:merchant)
+
+    item_1 = FactoryBot.create(:item, merchant_id: merchant.id, name: "B - Snake Snax")
+    item_2 = FactoryBot.create(:item, merchant_id: merchant.id, name: "Bug Breakfast")
+    item_3 = FactoryBot.create(:item, merchant_id: merchant.id, name: "a - Juice of a snake")
+
+    search_string = "snake"
+
+    get "/api/v1/items/find?name=#{search_string}"
+
+    expect(response).to be_successful
+
+    item = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(item).to have_key(:id)
+
+    expect(item[:id].to_i).to eq(item_3.id)
+
+    expect(item[:attributes][:name]).to eq(item_3.name)
+    expect(item[:attributes][:unit_price]).to eq(item_3.unit_price)
+    expect(item[:attributes][:description]).to eq(item_3.description)
+    expect(item[:attributes][:merchant_id]).to eq(item_3.merchant_id)
+  end
 end

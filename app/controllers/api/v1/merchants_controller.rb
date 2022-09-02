@@ -1,15 +1,54 @@
 class Api::V1::MerchantsController < ApplicationController
+  before_action :access_merchant, only: [:show]
+  before_action :access_merchants, only: [:index]
+  before_action :make_finder, only: [:find, :find_all]
 
   def index
-    render json: MerchantSerializer.new(Merchant.all)
+    merchant_json_response(@merchants)
   end
 
   def show
-    if Merchant.exists?(params[:id])
-      render json: MerchantSerializer.new(Merchant.find(params[:id]))
+    merchant_json_response(@merchant)
+  end
+
+  def find
+    results = @merchant_finder.search_one
+
+    if results == "No name error"
+      error_response(results, 400)
+    elsif results.nil?
+      render json: { data: {} }, status: 200
     else
-      render :json => {:error => "Not found"}.to_json, :status => 404
+      merchant_json_response(results)
     end
+
+  end
+
+  def find_all
+    results = @merchant_finder.search_all
+
+    if results == "No name error"
+      error_response(results, 400)
+    elsif results.nil?
+      render json: { data: {} }, status: 200
+    else
+      merchant_json_response(results)
+    end
+    
+  end
+
+  private
+
+  def access_merchant
+    @merchant = Merchant.find(params[:id])
+  end
+
+  def access_merchants
+    @merchants = Merchant.all
+  end
+
+  def make_finder
+    @merchant_finder = MerchantFinder.new(params[:name])
   end
 
 end

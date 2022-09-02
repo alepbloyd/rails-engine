@@ -1,37 +1,17 @@
 class Api::V1::ItemsController < ApplicationController
+  before_action :access_item, only: [:show,:destroy,:update]
+  before_action :access_items, only: [:index]
+  before_action :make_finder, only: [:find, :find_all]
 
   def index
-    if params[:merchant_id] != nil
-      merchant = Merchant.find(params[:merchant_id])
-      items = merchant.items
-    else
-      items = Item.all
-    end
-
-    render json: ItemSerializer.new(items)
+    item_json_response(@items)
   end
 
   def show
-    if Item.exists?(params[:id])
-      item = Item.find(params[:id])
-      render json: ItemSerializer.new(item)
-    else
-      render :json => {:error => "Not found"}.to_json, :status => 404
-    end
-  end
-
-  def show_merchant
-    if Item.exists?(params[:id])
-      item = Item.find(params[:id])
-      merchant = item.merchant
-      render json: MerchantSerializer.new(merchant)
-    else
-      render status: 404
-    end
+    item_json_response(@item)
   end
 
   def create
-    # if item_params.permitted?
     if item_params[:name] != nil && item_params[:description] != nil && item_params[:unit_price] != nil && item_params[:merchant_id] != nil 
       render json: ItemSerializer.new(Item.create(item_params)), status: 201
     else
@@ -40,27 +20,32 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def destroy
-    if Item.exists?(params[:id])
-      Item.delete(params[:id])
-      render status: 201
-    else
-      render :json => {:error => "Item does not exist"}.to_json, :status => 400
-    end
+    Item.delete(@item)
+    render status: 201
   end
 
   def update
-    if Item.exists?(params[:id])
-      if item_params.has_key?("merchant_id")
-        if Merchant.exists?(item_params[:merchant_id])
-            render json: ItemSerializer.new(Item.update(params[:id],item_params)), status: 200
-        else
-          render status: 404
-        end
-      else
-        render json: ItemSerializer.new(Item.update(params[:id],item_params)), status: 200
-      end
+    @item.update!(item_params)
+    item_json_response(@item)
+  end
+
+  def find
+    results = @item_finder.search_one
+
+    if results == "Below zero error" || results == "Name and Price error"
+      error_response(results, 400)
     else
-      render status: 404
+      item_json_response(results)
+    end
+  end
+
+  def find_all
+    results = @item_finder.search_all
+
+    if results == "Below zero error" || results == "Name and Price error"
+      error_response(results, 400)
+    else
+      item_json_response(results)
     end
   end
 
@@ -68,6 +53,22 @@ class Api::V1::ItemsController < ApplicationController
 
   def item_params
     params.require(:item).permit(:name,:description, :unit_price, :merchant_id)
+  end
+
+  def access_item
+    @item = Item.find(params[:id])
+  end
+
+  def access_items
+    @items = Item.all
+  end
+
+  def access_merchant
+    # @merchant = Merchant.find(item_params[:merchant_id])
+  end
+
+  def make_finder
+    @item_finder = ItemFinder.new(params[:name],params[:min_price],params[:max_price])
   end
 
 end
