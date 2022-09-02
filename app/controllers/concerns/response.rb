@@ -7,7 +7,7 @@ module Response
     render json: ItemSerializer.new(object), status: status
   end
 
-  def error_response(message, status)
+  def error_response(message, status = :not_found)
     render json: message, status: status
   end
 end

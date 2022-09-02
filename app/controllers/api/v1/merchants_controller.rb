@@ -13,15 +13,28 @@ class Api::V1::MerchantsController < ApplicationController
 
   def find
     results = @merchant_finder.search_one
-    
-    if results.nil?
+
+    if results == "No name error"
+      error_response(results, 400)
+    elsif results.nil?
       render json: { data: {} }, status: 200
     else
       merchant_json_response(results)
     end
+
   end
 
   def find_all
+    results = @merchant_finder.search_all
+
+    if results == "No name error"
+      error_response(results, 400)
+    elsif results.nil?
+      render json: { data: {} }, status: 200
+    else
+      merchant_json_response(results)
+    end
+    
   end
 
   private
