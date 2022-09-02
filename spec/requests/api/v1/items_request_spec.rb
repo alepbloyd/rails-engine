@@ -226,7 +226,7 @@ describe 'Items API' do
 
     patch "/api/v1/items/#{item_1.id}", headers: headers, params: JSON.generate({item: item_params})
 
-    expect(response.status).to eq(404)
+    expect(response.status).to eq(422)
   end
 
   it 'can update an item with only partial data' do
